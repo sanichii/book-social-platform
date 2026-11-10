@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ user.username }}'s Profile{% endblock %}
+
+{% block content %}
+<h2>User Profile</h2>
+<p><strong>Username:</strong> {{ user.username }}</p>
+<p><strong>Email:</strong> {{ user.email }}</p>
+<p><strong>Subscription Tier:</strong> {{ user.subscription_tier }}</p>
+<p><strong>Bio:</strong> {{ user.profile.bio|default:"No bio yet." }}</p>
+
+<p style="text-align: center; margin-top: 25px;">
+    <a href="{% url 'accounts:logout' %}" style="color: red; text-decoration: none; font-weight: bold;">Logout</a>
+</p>
+{% endblock %}
