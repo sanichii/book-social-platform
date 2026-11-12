@@ -1,8 +1,13 @@
 from django.contrib import messages
 from django.contrib.auth import login, logout
+<<<<<<< HEAD
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 from .forms import LoginForm, ProfileUpdateForm, RegisterForm, UserUpdateForm
+=======
+from django.shortcuts import redirect, render
+from .forms import LoginForm, RegisterForm
+>>>>>>> origin/feature/accounts-auth-views
 
 
 def register_view(request):
@@ -46,6 +51,7 @@ def logout_view(request):
     return redirect('accounts:login')
 
 
+<<<<<<< HEAD
 @login_required(login_url='accounts:login')
 def profile_view(request):
     return render(request, 'accounts/profile.html', {'user': request.user})
@@ -75,3 +81,9 @@ def profile_edit_view(request):
         'p_form': p_form,
     }
     return render(request, 'accounts/profile_edit.html', context)
+=======
+def profile_view(request):
+    if not request.user.is_authenticated:
+        return redirect('accounts:login')
+    return render(request, 'accounts/profile.html', {'user': request.user})
+>>>>>>> origin/feature/accounts-auth-views
