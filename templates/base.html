@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Book Social Platform{% endblock %}</title>
+    <style>
+        :root {
+            --bg-cream: #E5E0D8;
+            --olive-primary: #809671;
+            --olive-dark: #637756;
+            --sage-soft: #B3B792;
+            --tan-accent: #D2AB80;
+            --card-white: #FAF8F5;
+            --text-dark: #2C3327;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-cream);
+            margin: 0;
+            color: var(--text-dark);
+        }
+        .navbar {
+            background-color: var(--olive-primary);
+            padding: 14px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            margin-left: 18px;
+        }
+        .navbar .brand {
+            font-size: 20px;
+            font-weight: bold;
+            margin-left: 0;
+            letter-spacing: 0.5px;
+        }
+        .container {
+            max-width: 500px;
+            margin: 40px auto;
+            background: var(--card-white);
+            padding: 32px;
+            border-radius: 14px;
+            border: 1px solid var(--sage-soft);
+            box-shadow: 0 6px 18px rgba(44, 51, 39, 0.08);
+        }
+        h2 { margin-top: 0; text-align: center; color: var(--olive-dark); }
+        .form-group { margin-bottom: 16px; }
+        label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 14px; }
+        .form-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--sage-soft);
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 14px;
+            background-color: #fff;
+        }
+        .form-input:focus { border-color: var(--olive-primary); outline: none; }
+        .btn {
+            display: block;
+            width: 100%;
+            background-color: var(--olive-primary);
+            color: white;
+            border: none;
+            padding: 11px;
+            font-size: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+        .btn:hover { background-color: var(--olive-dark); }
+        .messages { margin-bottom: 15px; }
+        .alert {
+            padding: 10px 14px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        .alert-success { background-color: #e4ede0; color: #2d4722; border: 1px solid #b5cca8; }
+        .alert-error { background-color: #fde8e8; color: #9b1c1c; border: 1px solid #f8b4b4; }
+        .alert-info { background-color: #f3eadf; color: #6e4e26; border: 1px solid var(--tan-accent); }
+        .switch-link { text-align: center; margin-top: 18px; font-size: 14px; }
+        .switch-link a { color: var(--olive-dark); text-decoration: none; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="{% url 'accounts:profile' %}" class="brand">BookCircle</a>
+        <div>
+            {% if user.is_authenticated %}
+                <a href="{% url 'accounts:profile' %}">Profile</a>
+                <a href="{% url 'accounts:logout' %}">Logout</a>
+            {% else %}
+                <a href="{% url 'accounts:login' %}">Login</a>
+                <a href="{% url 'accounts:register' %}">Register</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <div class="container">
+        {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>
