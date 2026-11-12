@@ -118,3 +118,52 @@ class Book(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class ReadingShelf(models.Model):
+
+    STATUS_CHOICES = [
+        ('want_to_read', 'Want to Read'),
+        ('reading', 'Currently Reading'),
+        ('finished', 'Finished'),
+    ]
+
+    user = models.ForeignKey(
+        'accounts.CustomUser',
+        on_delete=models.CASCADE,
+        related_name='reading_shelves',
+        verbose_name='User'
+    )
+
+    book = models.ForeignKey(
+        Book,
+        on_delete=models.CASCADE,
+        related_name='reading_shelves',
+        verbose_name='Book'
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='want_to_read',
+        verbose_name='Reading Status'
+    )
+
+    added_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Added At'
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        verbose_name='Updated At'
+    )
+
+    class Meta:
+        unique_together = ('user', 'book')
+        ordering = ['-updated_at']
+        verbose_name = 'Reading Shelf'
+        verbose_name_plural = 'Reading Shelves'
+
+    def __str__(self):
+        return f"{self.user} - {self.book} ({self.status})"
