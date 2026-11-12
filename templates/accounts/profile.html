@@ -4,10 +4,10 @@
 
 {% block content %}
 <div style="text-align: center; margin-bottom: 20px;">
-    {% if user.profile.avatar %}
+    {% if user.profile.avatar and user.profile.avatar.name != 'avatars/default.png' %}
         <img src="{{ user.profile.avatar.url }}" alt="{{ user.username }}" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 2px solid #2b6cb0;">
     {% else %}
-        <div style="width: 100px; height: 100px; border-radius: 50%; background: #ccc; margin: 0 auto; line-height: 100px; font-weight: bold; font-size: 24px;">
+        <div style="width: 100px; height: 100px; border-radius: 50%; background: #2b6cb0; color: white; margin: 0 auto; line-height: 100px; font-weight: bold; font-size: 32px;">
             {{ user.username|make_list|first|upper }}
         </div>
     {% endif %}
