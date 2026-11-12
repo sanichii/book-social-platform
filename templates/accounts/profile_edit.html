@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Edit Profile - Book Social{% endblock %}
+{% block title %}Edit Profile - BookCircle{% endblock %}
 
 {% block content %}
 <h2>Edit Profile</h2>
@@ -12,7 +12,7 @@
         <label>Username</label>
         {{ u_form.username }}
         {% if u_form.username.errors %}
-            <small style="color: red;">{{ u_form.username.errors.0 }}</small>
+            <small style="color: #9b1c1c;">{{ u_form.username.errors.0 }}</small>
         {% endif %}
     </div>
 
@@ -20,7 +20,7 @@
         <label>Email</label>
         {{ u_form.email }}
         {% if u_form.email.errors %}
-            <small style="color: red;">{{ u_form.email.errors.0 }}</small>
+            <small style="color: #9b1c1c;">{{ u_form.email.errors.0 }}</small>
         {% endif %}
     </div>
 
@@ -28,7 +28,7 @@
         <label>Favorite Genre</label>
         {{ p_form.favorite_genre }}
         {% if p_form.favorite_genre.errors %}
-            <small style="color: red;">{{ p_form.favorite_genre.errors.0 }}</small>
+            <small style="color: #9b1c1c;">{{ p_form.favorite_genre.errors.0 }}</small>
         {% endif %}
     </div>
 
@@ -36,7 +36,7 @@
         <label>Bio</label>
         {{ p_form.bio }}
         {% if p_form.bio.errors %}
-            <small style="color: red;">{{ p_form.bio.errors.0 }}</small>
+            <small style="color: #9b1c1c;">{{ p_form.bio.errors.0 }}</small>
         {% endif %}
     </div>
 
@@ -44,7 +44,7 @@
         <label>Avatar Image</label>
         {{ p_form.avatar }}
         {% if p_form.avatar.errors %}
-            <small style="color: red;">{{ p_form.avatar.errors.0 }}</small>
+            <small style="color: #9b1c1c;">{{ p_form.avatar.errors.0 }}</small>
         {% endif %}
     </div>
 

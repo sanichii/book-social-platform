@@ -1,21 +1,14 @@
 from django import forms
 from django.contrib.auth import authenticate
 from django.contrib.auth.forms import UserCreationForm
-<<<<<<< HEAD
 from .models import CustomUser, Profile
-=======
-from .models import CustomUser
->>>>>>> origin/feature/accounts-auth-views
 
 
 class RegisterForm(UserCreationForm):
     email = forms.EmailField(
         required=True,
         widget=forms.EmailInput(
-            attrs={
-                'class': 'form-input',
-                'placeholder': 'Enter your email address',
-            }
+            attrs={'class': 'form-input', 'placeholder': 'Enter your email address'}
         ),
     )
     username = forms.CharField(
@@ -60,7 +53,6 @@ class LoginForm(forms.Form):
             if not user:
                 raise forms.ValidationError("Invalid email or password.")
             self.user = user
-<<<<<<< HEAD
         return cleaned_data
 
 
@@ -120,6 +112,3 @@ class ProfileUpdateForm(forms.ModelForm):
     class Meta:
         model = Profile
         fields = ['bio', 'favorite_genre', 'avatar']
-=======
-        return cleaned_data
->>>>>>> origin/feature/accounts-auth-views

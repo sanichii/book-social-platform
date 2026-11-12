@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Register - Book Social{% endblock %}
+{% block title %}Register - BookCircle{% endblock %}
 
 {% block content %}
 <h2>Create an Account</h2>
@@ -16,7 +16,7 @@
         <label>Username</label>
         {{ form.username }}
         {% if form.username.errors %}
-            <small style="color: red;">{{ form.username.errors.0 }}</small>
+            <small style="color: #9b1c1c;">{{ form.username.errors.0 }}</small>
         {% endif %}
     </div>
 
@@ -24,7 +24,7 @@
         <label>Email</label>
         {{ form.email }}
         {% if form.email.errors %}
-            <small style="color: red;">{{ form.email.errors.0 }}</small>
+            <small style="color: #9b1c1c;">{{ form.email.errors.0 }}</small>
         {% endif %}
     </div>
 
@@ -32,7 +32,7 @@
         <label>Password</label>
         {{ form.password1 }}
         {% if form.password1.errors %}
-            <small style="color: red;">{{ form.password1.errors.0 }}</small>
+            <small style="color: #9b1c1c;">{{ form.password1.errors.0 }}</small>
         {% endif %}
     </div>
 
@@ -40,7 +40,7 @@
         <label>Confirm Password</label>
         {{ form.password2 }}
         {% if form.password2.errors %}
-            <small style="color: red;">{{ form.password2.errors.0 }}</small>
+            <small style="color: #9b1c1c;">{{ form.password2.errors.0 }}</small>
         {% endif %}
     </div>
 
