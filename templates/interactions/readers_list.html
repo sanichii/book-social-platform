@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="max-width: 780px; margin: 20px auto; padding: 0 15px;">
+    <h2 style="color: #3d4a35;">Discover Readers</h2>
+    {% for reader in readers %}
+        <div style="background: #fff; border: 1px solid #d5cfc5; border-radius: 12px; padding: 16px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <a href="{% url 'interactions:user_profile' reader.username %}" style="font-size: 1.1em; font-weight: bold; color: #3d4a35; text-decoration: none;">
+                    @{{ reader.username }}
+                </a>
+                <p style="margin: 4px 0 0; color: #666; font-size: 0.9em;">{{ reader.profile.bio|truncatewords:15|default:"BookCircle Reader" }}</p>
+            </div>
+            <form method="POST" action="{% url 'interactions:toggle_follow' reader.username %}">
+                {% csrf_token %}
+                <button type="submit" style="background: {% if reader.id in following_ids %}#E5E0D8; color: #333{% else %}#809671; color: #fff{% endif %}; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer;">
+                    {% if reader.id in following_ids %}Following{% else %}Follow{% endif %}
+                </button>
+            </form>
+        </div>
+    {% empty %}
+        <p style="color: #777;">No other readers registered yet.</p>
+    {% endfor %}
+</div>
+{% endblock %}

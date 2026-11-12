@@ -9,6 +9,7 @@ urlpatterns = [
     path('accounts/', include('accounts.urls')),
     path('books/', include('books.urls')),
     path('posts/', include('posts.urls')),
+    path('social/', include('interactions.urls')),
     path('', lambda request: redirect('posts:feed')),
 ]
 

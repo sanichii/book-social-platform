@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 20px auto; padding: 0 15px;">
+    <div style="background: #fff; border: 1px solid #d5cfc5; border-radius: 12px; padding: 24px; margin-bottom: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+            <div>
+                <h2 style="margin: 0; color: #3d4a35;">@{{ profile_user.username }}</h2>
+                {% if profile_user.is_verified_author %}
+                    <span style="background: #809671; color: #fff; font-size: 0.8em; padding: 2px 8px; border-radius: 6px;">Verified Author</span>
+                {% endif %}
+                <p style="color: #555; margin-top: 8px;">{{ profile_user.profile.bio|default:"No biography written yet." }}</p>
+                {% if profile_user.profile.favorite_genre %}
+                    <p style="font-size: 0.9em; color: #666;"><strong>Favorite Genre:</strong> {{ profile_user.profile.favorite_genre }}</p>
+                {% endif %}
+            </div>
+
+            {% if profile_user != request.user %}
+                <form method="POST" action="{% url 'interactions:toggle_follow' profile_user.username %}">
+                    {% csrf_token %}
+                    <button type="submit" style="background: {% if is_following %}#E5E0D8; color: #333{% else %}#809671; color: #fff{% endif %}; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold;">
+                        {% if is_following %}Unfollow{% else %}+ Follow{% endif %}
+                    </button>
+                </form>
+            {% endif %}
+        </div>
+
+        <div style="display: flex; gap: 25px; margin-top: 16px; border-top: 1px solid #eee; padding-top: 14px;">
+            <span><strong>{{ followers_count }}</strong> Followers</span>
+            <span><strong>{{ following_count }}</strong> Following</span>
+            <span><strong>{{ user_posts.count }}</strong> Posts</span>
+            <span><strong>{{ user_shelves.count }}</strong> Books on Shelf</span>
+        </div>
+    </div>
+
+    <h3 style="color: #3d4a35;">Reading Shelf</h3>
+    <div style="background: #fff; border: 1px solid #d5cfc5; border-radius: 12px; padding: 16px; margin-bottom: 24px;">
+        {% for item in user_shelves %}
+            <div style="padding: 8px 0; border-bottom: 1px solid #f0ede6;">
+                <a href="{% url 'books:book_detail' item.book.pk %}" style="color: #3d4a35; font-weight: bold;">{{ item.book.title }}</a>
+                — <span style="color: #666;">{{ item.get_status_display }}</span>
+            </div>
+        {% empty %}
+            <p style="color: #777; margin: 0;">No books on shelf yet.</p>
+        {% endfor %}
+    </div>
+
+    <h3 style="color: #3d4a35;">Posts by @{{ profile_user.username }}</h3>
+    {% for post in user_posts %}
+        <div style="background: #fff; border: 1px solid #d5cfc5; border-radius: 12px; padding: 18px; margin-bottom: 16px;">
+            <small style="color: #777;">{{ post.get_post_type_display }} • {{ post.created_at|date:"M d, Y" }}</small>
+            <p style="margin: 6px 0;"><strong>Book:</strong> <a href="{% url 'books:book_detail' post.book.pk %}" style="color: #3d4a35;">{{ post.book.title }}</a></p>
+            <p style="white-space: pre-line;">{{ post.content }}</p>
+        </div>
+    {% empty %}
+        <p style="color: #777;">No posts shared yet.</p>
+    {% endfor %}
+</div>
+{% endblock %}

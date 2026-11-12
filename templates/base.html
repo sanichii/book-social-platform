@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Book Social Platform{% endblock %}</title>
+    <title>{% block title %}BookCircle{% endblock %}</title>
     <style>
         :root {
             --bg-cream: #E5E0D8;
@@ -35,6 +35,9 @@
             font-weight: 600;
             margin-left: 18px;
         }
+        .navbar a:hover {
+            text-decoration: underline;
+        }
         .navbar .brand {
             font-size: 20px;
             font-weight: bold;
@@ -42,10 +45,10 @@
             letter-spacing: 0.5px;
         }
         .container {
-            max-width: 500px;
-            margin: 40px auto;
+            max-width: 820px;
+            margin: 30px auto;
             background: var(--card-white);
-            padding: 32px;
+            padding: 28px;
             border-radius: 14px;
             border: 1px solid var(--sage-soft);
             box-shadow: 0 6px 18px rgba(44, 51, 39, 0.08);
@@ -53,7 +56,7 @@
         h2 { margin-top: 0; text-align: center; color: var(--olive-dark); }
         .form-group { margin-bottom: 16px; }
         label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 14px; }
-        .form-input {
+        .form-input, .form-control {
             width: 100%;
             padding: 10px 12px;
             border: 1px solid var(--sage-soft);
@@ -62,7 +65,7 @@
             font-size: 14px;
             background-color: #fff;
         }
-        .form-input:focus { border-color: var(--olive-primary); outline: none; }
+        .form-input:focus, .form-control:focus { border-color: var(--olive-primary); outline: none; }
         .btn {
             display: block;
             width: 100%;
@@ -93,10 +96,13 @@
 </head>
 <body>
     <nav class="navbar">
-        <a href="{% url 'accounts:profile' %}" class="brand">BookCircle</a>
+        <a href="{% url 'posts:feed' %}" class="brand">BookCircle</a>
         <div>
             {% if user.is_authenticated %}
-                <a href="{% url 'accounts:profile' %}">Profile</a>
+                <a href="{% url 'posts:feed' %}">Feed</a>
+                <a href="{% url 'books:book_catalog' %}">Books Catalog</a>
+                <a href="{% url 'interactions:readers_list' %}">Readers</a>
+                <a href="{% url 'accounts:profile' %}">My Profile</a>
                 <a href="{% url 'accounts:logout' %}">Logout</a>
             {% else %}
                 <a href="{% url 'accounts:login' %}">Login</a>

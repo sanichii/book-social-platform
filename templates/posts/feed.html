@@ -49,7 +49,7 @@
         <div style="background: #fff; border: 1px solid #d5cfc5; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                 <div>
-                    <strong>@{{ post.user.username }}</strong>
+                    <a href="{% url 'interactions:user_profile' post.user.username %}" style="color: #3d4a35; text-decoration: none; font-weight: bold;">@{{ post.user.username }}</a>
                     <span style="background: #E5E0D8; color: #3d4a35; padding: 2px 8px; border-radius: 6px; font-size: 0.85em; margin-left: 6px;">
                         {{ post.get_post_type_display }}
                     </span>
