@@ -1,4 +1,3 @@
-
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
@@ -9,7 +8,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('accounts.urls')),
     path('books/', include('books.urls')),
-    path('', lambda request: redirect('accounts:login')),
+    path('posts/', include('posts.urls')),
+    path('', lambda request: redirect('posts:feed')),
 ]
 
 if settings.DEBUG:
