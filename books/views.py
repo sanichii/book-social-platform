@@ -1,9 +1,8 @@
 
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.db.models import Q
 
-from .models import Book, Genre
-
+from .models import Book, Genre, ReadingShelf
 
 def book_catalog(request):
     books = Book.objects.all().prefetch_related(
@@ -36,3 +35,30 @@ def book_catalog(request):
     }
 
     return render(request, 'books/book_catalog.html', context)
+def book_detail(request, pk):
+    book = get_object_or_404(
+        Book.objects.prefetch_related(
+            'authors',
+            'genres'
+        ),
+        pk=pk
+    )
+
+    reading_shelf = None
+
+    if request.user.is_authenticated:
+        reading_shelf = ReadingShelf.objects.filter(
+            user=request.user,
+            book=book
+        ).first()
+
+    context = {
+        'book': book,
+        'reading_shelf': reading_shelf,
+    }
+
+    return render(
+        request,
+        'books/book_detail.html',
+        context
+    )
