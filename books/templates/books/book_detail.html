@@ -1,34 +1,71 @@
 {% extends 'base.html' %}
 
+{% block title %}{{ book.title }} - BookCircle{% endblock %}
+
 {% block content %}
+<div style="display: flex; gap: 24px; flex-wrap: wrap; margin-bottom: 24px;">
+    {% if book.cover_image %}
+        <img src="{{ book.cover_image.url }}" alt="{{ book.title }}" style="width: 200px; height: 290px; object-fit: cover; border-radius: 10px; border: 1px solid #d5cfc5;">
+    {% endif %}
 
-<h1>{{ book.title }}</h1>
+    <div style="flex: 1; min-width: 240px;">
+        <h2 style="text-align: left; margin-bottom: 8px;">{{ book.title }}</h2>
+        <p><strong>Authors:</strong>
+            {% for author in book.authors.all %}
+                {{ author.first_name }} {{ author.last_name }}{% if not forloop.last %}, {% endif %}
+            {% empty %}
+                Unknown
+            {% endfor %}
+        </p>
+        <p><strong>Genres:</strong>
+            {% for genre in book.genres.all %}
+                <span style="background: #E5E0D8; padding: 3px 10px; border-radius: 6px; font-size: 0.9em;">{{ genre.name }}</span>
+            {% empty %}
+                Uncategorized
+            {% endfor %}
+        </p>
+        <p><strong>Publication Year:</strong> {{ book.publication_year|default:"Not specified" }}</p>
+        <p><strong>ISBN:</strong> {{ book.isbn|default:"Not specified" }}</p>
 
-{% if book.cover_image %}
-    <img src="{{ book.cover_image.url }}" alt="{{ book.title }}" width="200">
-{% endif %}
+        {% if user.is_authenticated %}
+            <div style="background: #fff; border: 1px solid #d5cfc5; border-radius: 10px; padding: 14px; margin-top: 16px;">
+                <form method="POST" action="{% url 'books:update_reading_shelf' book.pk %}" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                    {% csrf_token %}
+                    <label style="margin: 0;"><strong>My Reading Shelf:</strong></label>
+                    <select name="status" class="form-input" style="width: auto; flex: 1;">
+                        {% for value, label in status_choices %}
+                            <option value="{{ value }}" {% if reading_shelf and reading_shelf.status == value %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                        {% endfor %}
+                        {% if reading_shelf %}
+                            <option value="remove">-- Remove from Shelf --</option>
+                        {% endif %}
+                    </select>
+                    <button type="submit" style="background: #809671; color: #fff; border: none; padding: 9px 16px; border-radius: 8px; cursor: pointer; font-weight: bold;">
+                        Save
+                    </button>
+                </form>
+            </div>
+        {% endif %}
+    </div>
+</div>
 
-<h3>Authors</h3>
-<ul>
-    {% for author in book.authors.all %}
-        <li>{{ author.first_name }} {{ author.last_name }}</li>
-    {% endfor %}
-</ul>
+<div style="background: #fff; border: 1px solid #d5cfc5; border-radius: 10px; padding: 18px; margin-bottom: 24px;">
+    <h3 style="margin-top: 0; color: #3d4a35;">Summary</h3>
+    <p style="line-height: 1.6; margin-bottom: 0;">{{ book.summary|default:"No summary available." }}</p>
+</div>
 
-<h3>Genres</h3>
-<ul>
-    {% for genre in book.genres.all %}
-        <li>{{ genre.name }}</li>
-    {% endfor %}
-</ul>
-
-<h3>Publication Year</h3>
-<p>{{ book.publication_year|default:"Not specified" }}</p>
-
-<h3>ISBN</h3>
-<p>{{ book.isbn|default:"Not specified" }}</p>
-
-<h3>Summary</h3>
-<p>{{ book.summary|default:"No summary available." }}</p>
-
+<h3 style="color: #3d4a35;">Reader Posts & Reviews ({{ book_posts.count }})</h3>
+{% for post in book_posts %}
+    <div style="background: #fff; border: 1px solid #d5cfc5; border-radius: 10px; padding: 16px; margin-bottom: 12px;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+            <a href="{% url 'interactions:user_profile' post.user.username %}" style="font-weight: bold; color: #3d4a35; text-decoration: none;">@{{ post.user.username }}</a>
+            <small style="color: #777;">{{ post.get_post_type_display }} • {{ post.created_at|date:"M d, Y" }}</small>
+        </div>
+        <p style="margin: 0; white-space: pre-line;">{{ post.content }}</p>
+    </div>
+{% empty %}
+    <p style="color: #777;">No posts for this book yet. <a href="{% url 'posts:feed' %}" style="color: #637756;">Be the first to share one!</a></p>
+{% endfor %}
 {% endblock %}
