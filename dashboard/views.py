@@ -1,8 +1,12 @@
 
+from datetime import timedelta
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import models
+from django.db.models import Count
 from django.shortcuts import redirect, render
+from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from accounts.models import CustomUser
@@ -28,6 +32,81 @@ def dashboard_view(request):
     }
 
     return render(request, 'dashboard/index.html', context)
+
+
+@login_required(login_url='accounts:login')
+def analytics_view(request):
+    if not request.user.is_staff:
+        messages.error(
+            request,
+            "You do not have permission to access this page."
+        )
+        return redirect('posts:feed')
+
+    today = timezone.localdate()
+    start_date = today - timedelta(days=6)
+
+    new_users_count = CustomUser.objects.filter(
+        date_joined__date__gte=start_date,
+        date_joined__date__lte=today
+    ).count()
+
+    daily_posts = []
+
+    for day_offset in range(7):
+        current_day = start_date + timedelta(days=day_offset)
+
+        posts_count = Post.objects.filter(
+            created_at__date=current_day
+        ).count()
+
+        daily_posts.append({
+            'date': current_day,
+            'count': posts_count,
+        })
+
+    popular_books = Book.objects.annotate(
+        shelf_count=Count('reading_shelves')
+    ).filter(
+        shelf_count__gt=0
+    ).order_by(
+        '-shelf_count',
+        'title'
+    )[:5]
+
+    shelf_status_counts = {
+        status: 0
+        for status, label in ReadingShelf.STATUS_CHOICES
+    }
+
+    shelf_stats = ReadingShelf.objects.values(
+        'status'
+    ).annotate(
+        total=Count('id')
+    )
+
+    for item in shelf_stats:
+        shelf_status_counts[item['status']] = item['total']
+
+    shelf_statuses = [
+        {
+            'value': status,
+            'label': label,
+            'count': shelf_status_counts[status],
+        }
+        for status, label in ReadingShelf.STATUS_CHOICES
+    ]
+
+    context = {
+        'new_users_count': new_users_count,
+        'daily_posts': daily_posts,
+        'popular_books': popular_books,
+        'shelf_statuses': shelf_statuses,
+        'start_date': start_date,
+        'today': today,
+    }
+
+    return render(request, 'dashboard/analytics.html', context)
 
 
 @login_required(login_url='accounts:login')
@@ -335,3 +414,101 @@ def toggle_user_status(request, user_id):
     )
 
     return redirect('dashboard:users')
+
+
+# Staff Management
+
+@login_required(login_url='accounts:login')
+def staff_view(request):
+    if not request.user.is_superuser:
+        messages.error(
+            request,
+            "Only superusers can manage staff accounts."
+        )
+        return redirect('dashboard:index')
+
+    staff_users = CustomUser.objects.filter(
+        is_staff=True
+    ).order_by('-date_joined')
+
+    context = {
+        'staff_users': staff_users,
+    }
+
+    return render(request, 'dashboard/staff.html', context)
+
+
+@login_required(login_url='accounts:login')
+@require_POST
+def toggle_staff_status(request, user_id):
+    if not request.user.is_superuser:
+        messages.error(
+            request,
+            "Only superusers can change staff permissions."
+        )
+        return redirect('dashboard:index')
+
+    try:
+        target_user = CustomUser.objects.get(id=user_id)
+    except CustomUser.DoesNotExist:
+        messages.error(request, "User not found.")
+        return redirect('dashboard:staff')
+
+    if target_user.id == request.user.id:
+        messages.error(
+            request,
+            "You cannot change your own staff permissions."
+        )
+        return redirect('dashboard:staff')
+
+    if target_user.is_superuser:
+        messages.error(
+            request,
+            "You cannot change another superuser's staff permissions."
+        )
+        return redirect('dashboard:staff')
+
+    target_user.is_staff = not target_user.is_staff
+    target_user.save(update_fields=['is_staff'])
+
+    messages.success(
+        request,
+        f"Staff permissions for {target_user.username} updated successfully."
+    )
+
+    return redirect('dashboard:staff')
+
+
+# Verified Authors
+
+@login_required(login_url='accounts:login')
+def verified_authors_view(request):
+    if not request.user.is_staff:
+        messages.error(
+            request,
+            "You do not have permission to access this page."
+        )
+        return redirect('posts:feed')
+
+    search_query = request.GET.get('search', '').strip()
+
+    verified_authors = CustomUser.objects.filter(
+        is_verified_author=True
+    ).order_by('username')
+
+    if search_query:
+        verified_authors = verified_authors.filter(
+            models.Q(username__icontains=search_query) |
+            models.Q(email__icontains=search_query)
+        )
+
+    context = {
+        'verified_authors': verified_authors,
+        'search_query': search_query,
+    }
+
+    return render(
+        request,
+        'dashboard/verified_authors.html',
+        context
+    )

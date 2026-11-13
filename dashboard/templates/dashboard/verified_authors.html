@@ -1,0 +1,61 @@
+
+{% extends 'base.html' %}
+
+{% block title %}Verified Authors — BookCircle{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 30px 0;">
+
+    <h1 style="color: var(--espresso-dark); margin-bottom: 8px;">
+        Verified Authors
+    </h1>
+
+    <p style="color: var(--text-muted); margin-bottom: 25px;">
+        View and search authors verified by BookCircle.
+    </p>
+
+    <div class="card">
+
+        <form method="GET" style="margin-bottom: 25px;">
+            <input
+                type="text"
+                name="search"
+                value="{{ search_query }}"
+                placeholder="Search by username or email..."
+            >
+
+            <button type="submit" class="btn">
+                Search
+            </button>
+        </form>
+
+        {% for author in verified_authors %}
+            <div style="
+                padding: 15px 0;
+                border-bottom: 1px solid #eee;
+            ">
+
+                <strong>{{ author.username }}</strong>
+
+                <p style="color: var(--text-muted); margin: 5px 0;">
+                    {{ author.email }}
+                </p>
+
+                <span>Verified Author</span>
+
+            </div>
+
+        {% empty %}
+            <p>No verified authors found.</p>
+        {% endfor %}
+
+    </div>
+
+    <div style="margin-top: 25px;">
+        <a href="{% url 'dashboard:index' %}" class="btn">
+            Back to Dashboard
+        </a>
+    </div>
+
+</div>
+{% endblock %}

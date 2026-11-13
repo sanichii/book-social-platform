@@ -57,6 +57,20 @@
                 Manage Posts
             </a>
 
+            <a href="{% url 'dashboard:analytics' %}" class="btn">
+                View Analytics
+            </a>
+
+            {% if request.user.is_superuser %}
+                <a href="{% url 'dashboard:staff' %}" class="btn">
+                    Staff Management
+                </a>
+            {% endif %}
+
+            <a href="{% url 'dashboard:verified_authors' %}" class="btn">
+                Verified Authors
+            </a>
+
         </div>
     </div>
 

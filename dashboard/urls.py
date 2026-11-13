@@ -7,11 +7,26 @@ app_name = 'dashboard'
 urlpatterns = [
     path('', views.dashboard_view, name='index'),
 
+    path('analytics/', views.analytics_view, name='analytics'),
+
     path('users/', views.users_view, name='users'),
     path(
         'users/<int:user_id>/toggle-status/',
         views.toggle_user_status,
         name='toggle_user_status'
+    ),
+
+    path('staff/', views.staff_view, name='staff'),
+    path(
+        'staff/<int:user_id>/toggle/',
+        views.toggle_staff_status,
+        name='toggle_staff_status'
+    ),
+
+    path(
+        'verified-authors/',
+        views.verified_authors_view,
+        name='verified_authors'
     ),
 
     path('books/', views.books_view, name='books'),

@@ -1,0 +1,102 @@
+
+{% extends 'base.html' %}
+
+{% block title %}Analytics — BookCircle{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 30px 0;">
+
+    <h1 style="color: var(--espresso-dark); margin-bottom: 8px;">
+        Analytics
+    </h1>
+
+    <p style="color: var(--text-muted); margin-bottom: 30px;">
+        BookCircle platform statistics
+    </p>
+
+    <!-- New Users -->
+    <div class="card" style="margin-bottom: 25px;">
+        <h2>New Users</h2>
+
+        <p style="font-size: 32px; font-weight: bold; margin: 10px 0;">
+            {{ new_users_count }}
+        </p>
+
+        <p style="color: var(--text-muted);">
+            New users registered in the last 7 days
+        </p>
+    </div>
+
+    <!-- Daily Posts -->
+    <div class="card" style="margin-bottom: 25px;">
+        <h2>Daily Posts</h2>
+
+        <p style="color: var(--text-muted); margin-bottom: 20px;">
+            Number of posts published each day
+        </p>
+
+        {% for day in daily_posts %}
+            <div style="margin-bottom: 15px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                    <span>{{ day.date|date:"M d, Y" }}</span>
+                    <strong>{{ day.count }}</strong>
+                </div>
+
+                <div style="background: #eee; height: 10px; border-radius: 5px; overflow: hidden;">
+                    <div style="
+                        background: var(--espresso-dark);
+                        height: 10px;
+                        width: {% widthratio day.count 100 100 %}%;
+                        max-width: 100%;
+                    "></div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Popular Books -->
+    <div class="card" style="margin-bottom: 25px;">
+        <h2>Popular Books</h2>
+
+        <p style="color: var(--text-muted); margin-bottom: 20px;">
+            Top 5 books based on reading shelf activity
+        </p>
+
+        {% for book in popular_books %}
+            <div style="padding: 12px 0; border-bottom: 1px solid #eee;">
+                <strong>{{ forloop.counter }}. {{ book.title }}</strong>
+
+                <p style="color: var(--text-muted); margin: 5px 0 0;">
+                    {{ book.shelf_count }} reading shelf(s)
+                </p>
+            </div>
+        {% empty %}
+            <p>No reading shelf activity yet.</p>
+        {% endfor %}
+    </div>
+
+    <!-- Reading Shelf Statistics -->
+    <div class="card" style="margin-bottom: 25px;">
+        <h2>Reading Shelf Statistics</h2>
+
+        {% for shelf in shelf_statuses %}
+            <div style="
+                display: flex;
+                justify-content: space-between;
+                padding: 12px 0;
+                border-bottom: 1px solid #eee;
+            ">
+                <span>{{ shelf.label }}</span>
+                <strong>{{ shelf.count }}</strong>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div style="margin-top: 25px;">
+        <a href="{% url 'dashboard:index' %}" class="btn">
+            Back to Dashboard
+        </a>
+    </div>
+
+</div>
+{% endblock %}
