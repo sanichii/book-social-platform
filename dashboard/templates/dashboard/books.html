@@ -1,0 +1,148 @@
+
+{% extends 'base.html' %}
+
+{% block title %}Book Management — BookCircle{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 30px 0;">
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+        <div>
+            <h1 style="color: var(--espresso-dark); margin-bottom: 8px;">
+                Book Management
+            </h1>
+            <p style="color: var(--text-muted);">
+                View and manage books in BookCircle.
+            </p>
+        </div>
+
+        <a href="{% url 'dashboard:index' %}" class="btn">
+            Back to Dashboard
+        </a>
+    </div>
+
+    <div class="card" style="padding: 20px; margin-bottom: 20px;">
+
+        <form method="GET" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+
+            <input
+                type="text"
+                name="search"
+                value="{{ search_query }}"
+                placeholder="Search by title, author or ISBN..."
+                style="flex: 1; min-width: 180px; padding: 12px; border: 1px solid #ddd; border-radius: 6px;"
+            >
+
+            <select
+                name="genre"
+                style="padding: 12px; border: 1px solid #ddd; border-radius: 6px;"
+            >
+                <option value="">All Genres</option>
+
+                {% for genre in genres %}
+                    <option
+                        value="{{ genre.id }}"
+                        {% if genre_filter == genre.id|stringformat:"s" %}selected{% endif %}
+                    >
+                        {{ genre.name }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <button type="submit" class="btn">
+                Apply Filters
+            </button>
+
+            {% if search_query or genre_filter %}
+                <a href="{% url 'dashboard:books' %}" class="btn">
+                    Clear
+                </a>
+            {% endif %}
+
+        </form>
+
+    </div>
+
+    <div class="card" style="overflow-x: auto;">
+
+        <h3>Books Found: {{ books|length }}</h3>
+
+        <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+
+            <thead>
+                <tr style="text-align: left; border-bottom: 2px solid #ddd;">
+                    <th style="padding: 12px;">Cover</th>
+                    <th style="padding: 12px;">Title</th>
+                    <th style="padding: 12px;">Author(s)</th>
+                    <th style="padding: 12px;">Genre(s)</th>
+                    <th style="padding: 12px;">ISBN</th>
+                    <th style="padding: 12px;">Publication Year</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for book in books %}
+                <tr style="border-bottom: 1px solid #eee;">
+
+                    <td style="padding: 12px;">
+                        {% if book.cover_image %}
+                            <img
+                                src="{{ book.cover_image.url }}"
+                                alt="{{ book.title }}"
+                                style="width: 50px; height: 70px; object-fit: cover; border-radius: 4px;"
+                            >
+                        {% else %}
+                            No Cover
+                        {% endif %}
+                    </td>
+
+                    <td style="padding: 12px;">
+                        <a
+                            href="{% url 'dashboard:book_detail' book.id %}"
+                            style="color: var(--espresso-dark); text-decoration: none; font-weight: 600;"
+                        >
+                            {{ book.title }}
+                        </a>
+                    </td>
+
+                    <td style="padding: 12px;">
+                        {% for author in book.authors.all %}
+                            {{ author.first_name }} {{ author.last_name }}{% if not forloop.last %}, {% endif %}
+                        {% empty %}
+                            Unknown
+                        {% endfor %}
+                    </td>
+
+                    <td style="padding: 12px;">
+                        {% for genre in book.genres.all %}
+                            {{ genre.name }}{% if not forloop.last %}, {% endif %}
+                        {% empty %}
+                            None
+                        {% endfor %}
+                    </td>
+
+                    <td style="padding: 12px;">
+                        {{ book.isbn|default:"—" }}
+                    </td>
+
+                    <td style="padding: 12px;">
+                        {{ book.publication_year|default:"—" }}
+                    </td>
+
+                </tr>
+
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="padding: 20px; text-align: center;">
+                        No books found.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+{% endblock %}

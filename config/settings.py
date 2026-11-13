@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     'books',
     'posts',
     'interactions',
+    'dashboard',
 ]
 
 MIDDLEWARE = [

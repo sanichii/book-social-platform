@@ -1,0 +1,152 @@
+
+{% extends 'base.html' %}
+
+{% block title %}User Management — BookCircle{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 30px 0;">
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+        <div>
+            <h1 style="color: var(--espresso-dark); margin-bottom: 8px;">
+                User Management
+            </h1>
+            <p style="color: var(--text-muted);">
+                View and manage BookCircle members.
+            </p>
+        </div>
+
+        <a href="{% url 'dashboard:index' %}" class="btn">
+            Back to Dashboard
+        </a>
+    </div>
+
+    <div class="card" style="padding: 20px; margin-bottom: 20px;">
+
+        <form method="GET" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+
+            <input
+                type="text"
+                name="search"
+                value="{{ search_query }}"
+                placeholder="Search by username or email..."
+                style="flex: 1; min-width: 180px; padding: 12px; border: 1px solid #ddd; border-radius: 6px;"
+            >
+
+            <select
+                name="subscription"
+                style="padding: 12px; border: 1px solid #ddd; border-radius: 6px;"
+            >
+                <option value="">All Subscriptions</option>
+
+                <option value="FREE"
+                    {% if subscription_filter == 'FREE' %}selected{% endif %}>
+                    Free
+                </option>
+
+                <option value="PREMIUM"
+                    {% if subscription_filter == 'PREMIUM' %}selected{% endif %}>
+                    Premium
+                </option>
+            </select>
+
+            <button type="submit" class="btn">
+                Apply Filters
+            </button>
+
+            {% if search_query or subscription_filter %}
+                <a href="{% url 'dashboard:users' %}" class="btn">
+                    Clear
+                </a>
+            {% endif %}
+
+        </form>
+
+    </div>
+
+    <div class="card" style="overflow-x: auto;">
+
+        <h3>Users Found: {{ users|length }}</h3>
+
+        <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+
+            <thead>
+                <tr style="text-align: left; border-bottom: 2px solid #ddd;">
+                    <th style="padding: 12px;">Username</th>
+                    <th style="padding: 12px;">Email</th>
+                    <th style="padding: 12px;">Subscription</th>
+                    <th style="padding: 12px;">Date Joined</th>
+                    <th style="padding: 12px;">Status</th>
+                    <th style="padding: 12px;">Action</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for user in users %}
+                <tr style="border-bottom: 1px solid #eee;">
+
+                    <td style="padding: 12px;">
+                        {{ user.username }}
+                    </td>
+
+                    <td style="padding: 12px;">
+                        {{ user.email }}
+                    </td>
+
+                    <td style="padding: 12px;">
+                        {{ user.get_subscription_tier_display }}
+                    </td>
+
+                    <td style="padding: 12px;">
+                        {{ user.date_joined|date:"Y-m-d" }}
+                    </td>
+
+                    <td style="padding: 12px;">
+                        {% if user.is_active %}
+                            <span style="color: green;">Active</span>
+                        {% else %}
+                            <span style="color: red;">Inactive</span>
+                        {% endif %}
+                    </td>
+
+                    <td style="padding: 12px;">
+                        {% if user.id != request.user.id and not user.is_superuser or request.user.is_superuser and user.id != request.user.id %}
+
+                            <form method="POST" action="{% url 'dashboard:toggle_user_status' user.id %}">
+                                {% csrf_token %}
+
+                                {% if user.is_active %}
+                                    <button type="submit" class="btn">
+                                        Deactivate
+                                    </button>
+                                {% else %}
+                                    <button type="submit" class="btn">
+                                        Activate
+                                    </button>
+                                {% endif %}
+                            </form>
+
+                        {% else %}
+                            <span style="color: var(--text-muted);">
+                                Protected
+                            </span>
+                        {% endif %}
+                    </td>
+
+                </tr>
+
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="padding: 20px; text-align: center;">
+                        No users found.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,130 @@
+
+{% extends 'base.html' %}
+
+{% block title %}Manage Posts — BookCircle{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 30px 0;">
+
+    <h1 style="color: var(--espresso-dark); margin-bottom: 8px;">
+        Manage Posts
+    </h1>
+
+    <p style="color: var(--text-muted); margin-bottom: 25px;">
+        View and search all posts shared on BookCircle.
+    </p>
+
+    <form method="GET" style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 25px;">
+
+        <input
+            type="text"
+            name="search"
+            value="{{ search_query }}"
+            placeholder="Search by content, username, or book title"
+            class="form-control"
+            style="flex: 1; min-width: 220px;"
+        >
+
+        <select name="post_type" class="form-control" style="min-width: 180px;">
+            <option value="">All Post Types</option>
+            <option value="review" {% if post_type_filter == 'review' %}selected{% endif %}>
+                Book Review
+            </option>
+            <option value="quote" {% if post_type_filter == 'quote' %}selected{% endif %}>
+                Book Quote
+            </option>
+            <option value="thought" {% if post_type_filter == 'thought' %}selected{% endif %}>
+                Reading Thought
+            </option>
+        </select>
+
+        <button type="submit" class="btn">
+            Search
+        </button>
+
+        <a href="{% url 'dashboard:posts' %}" class="btn">
+            Clear
+        </a>
+
+    </form>
+
+    {% if posts %}
+        <div class="card" style="overflow-x: auto;">
+
+            <table style="width: 100%; border-collapse: collapse;">
+
+                <thead>
+                    <tr>
+                        <th style="text-align: left; padding: 12px;">User</th>
+                        <th style="text-align: left; padding: 12px;">Book</th>
+                        <th style="text-align: left; padding: 12px;">Post Type</th>
+                        <th style="text-align: left; padding: 12px;">Content</th>
+                        <th style="text-align: left; padding: 12px;">Rating</th>
+                        <th style="text-align: left; padding: 12px;">Date</th>
+                        <th style="text-align: left; padding: 12px;">Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for post in posts %}
+                        <tr style="border-top: 1px solid var(--border-color);">
+
+                            <td style="padding: 12px;">
+                                {{ post.user.username }}
+                            </td>
+
+                            <td style="padding: 12px;">
+                                {{ post.book.title }}
+                            </td>
+
+                            <td style="padding: 12px;">
+                                {{ post.get_post_type_display }}
+                            </td>
+
+                            <td style="padding: 12px; max-width: 300px;">
+                                {{ post.content|truncatechars:100 }}
+                            </td>
+
+                            <td style="padding: 12px;">
+                                {% if post.rating %}
+                                    {{ post.rating }}/5
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+
+                            <td style="padding: 12px; white-space: nowrap;">
+                                {{ post.created_at|date:"M d, Y" }}
+                            </td>
+
+                            <td style="padding: 12px; white-space: nowrap;">
+                                <a
+                                    href="{% url 'dashboard:post_detail' post.id %}"
+                                    class="btn"
+                                >
+                                    View Details
+                                </a>
+                            </td>
+
+                        </tr>
+                    {% endfor %}
+                </tbody>
+
+            </table>
+
+        </div>
+
+    {% else %}
+        <div class="card">
+            <p>No posts found.</p>
+        </div>
+    {% endif %}
+
+    <div style="margin-top: 25px;">
+        <a href="{% url 'dashboard:index' %}" class="btn">
+            Back to Dashboard
+        </a>
+    </div>
+
+</div>
+{% endblock %}

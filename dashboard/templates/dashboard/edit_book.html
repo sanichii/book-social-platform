@@ -1,0 +1,77 @@
+
+{% extends 'base.html' %}
+
+{% block title %}Edit {{ book.title }} — BookCircle{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 30px 0; max-width: 800px;">
+
+    <div style="margin-bottom: 25px;">
+        <a href="{% url 'dashboard:book_detail' book.id %}" class="btn">
+            Back to Book Details
+        </a>
+    </div>
+
+    <div class="card" style="padding: 25px;">
+
+        <h1 style="color: var(--espresso-dark); margin-bottom: 25px;">
+            Edit Book
+        </h1>
+
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                <div style="color: #b00020; margin-bottom: 15px;">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            {% for field in form %}
+                <div style="margin-bottom: 20px;">
+
+                    <label
+                        for="{{ field.id_for_label }}"
+                        style="display: block; margin-bottom: 8px; font-weight: 600;"
+                    >
+                        {{ field.label }}
+                    </label>
+
+                    {{ field }}
+
+                    {% if field.help_text %}
+                        <small style="display: block; color: var(--text-muted); margin-top: 5px;">
+                            {{ field.help_text }}
+                        </small>
+                    {% endif %}
+
+                    {% for error in field.errors %}
+                        <p style="color: #b00020; margin-top: 5px;">
+                            {{ error }}
+                        </p>
+                    {% endfor %}
+
+                </div>
+            {% endfor %}
+
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+
+                <button type="submit" class="btn">
+                    Save Changes
+                </button>
+
+                <a
+                    href="{% url 'dashboard:book_detail' book.id %}"
+                    class="btn"
+                >
+                    Cancel
+                </a>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,64 @@
+
+{% extends 'base.html' %}
+
+{% block title %}Admin Dashboard — BookCircle{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 30px 0;">
+
+    <h1 style="color: var(--espresso-dark); margin-bottom: 8px;">
+        Admin Dashboard
+    </h1>
+
+    <p style="color: var(--text-muted); margin-bottom: 30px;">
+        Welcome, {{ request.user.username }}!
+    </p>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+
+        <div class="card">
+            <h3>Total Users</h3>
+            <p>{{ total_users }}</p>
+        </div>
+
+        <div class="card">
+            <h3>Total Books</h3>
+            <p>{{ total_books }}</p>
+        </div>
+
+        <div class="card">
+            <h3>Total Posts</h3>
+            <p>{{ total_posts }}</p>
+        </div>
+
+        <div class="card">
+            <h3>Total Reading Shelves</h3>
+            <p>{{ total_reading_shelves }}</p>
+        </div>
+
+    </div>
+
+    <div style="margin-top: 30px;">
+        <h2>Management</h2>
+
+        <p>Manage different sections of BookCircle.</p>
+
+        <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 20px;">
+
+            <a href="{% url 'dashboard:users' %}" class="btn">
+                Manage Users
+            </a>
+
+            <a href="{% url 'dashboard:books' %}" class="btn">
+                Manage Books
+            </a>
+
+            <a href="{% url 'dashboard:posts' %}" class="btn">
+                Manage Posts
+            </a>
+
+        </div>
+    </div>
+
+</div>
+{% endblock %}
