@@ -1,71 +1,134 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ book.title }} - BookCircle{% endblock %}
+{% block title %}{{ book.title }} — BookCircle Library{% endblock %}
 
 {% block content %}
-<div style="display: flex; gap: 24px; flex-wrap: wrap; margin-bottom: 24px;">
-    {% if book.cover_image %}
-        <img src="{{ book.cover_image.url }}" alt="{{ book.title }}" style="width: 200px; height: 290px; object-fit: cover; border-radius: 10px; border: 1px solid #d5cfc5;">
-    {% endif %}
+<div style="margin-bottom: 16px;">
+    <a href="{% url 'books:book_catalog' %}" style="color: var(--leather-brown); text-decoration: none; font-weight: 600; font-size: 14px;">
+        ← Back to Library Catalog
+    </a>
+</div>
 
-    <div style="flex: 1; min-width: 240px;">
-        <h2 style="text-align: left; margin-bottom: 8px;">{{ book.title }}</h2>
-        <p><strong>Authors:</strong>
-            {% for author in book.authors.all %}
-                {{ author.first_name }} {{ author.last_name }}{% if not forloop.last %}, {% endif %}
-            {% empty %}
-                Unknown
-            {% endfor %}
-        </p>
-        <p><strong>Genres:</strong>
-            {% for genre in book.genres.all %}
-                <span style="background: #E5E0D8; padding: 3px 10px; border-radius: 6px; font-size: 0.9em;">{{ genre.name }}</span>
-            {% empty %}
-                Uncategorized
-            {% endfor %}
-        </p>
-        <p><strong>Publication Year:</strong> {{ book.publication_year|default:"Not specified" }}</p>
-        <p><strong>ISBN:</strong> {{ book.isbn|default:"Not specified" }}</p>
-
-        {% if user.is_authenticated %}
-            <div style="background: #fff; border: 1px solid #d5cfc5; border-radius: 10px; padding: 14px; margin-top: 16px;">
-                <form method="POST" action="{% url 'books:update_reading_shelf' book.pk %}" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-                    {% csrf_token %}
-                    <label style="margin: 0;"><strong>My Reading Shelf:</strong></label>
-                    <select name="status" class="form-input" style="width: auto; flex: 1;">
-                        {% for value, label in status_choices %}
-                            <option value="{{ value }}" {% if reading_shelf and reading_shelf.status == value %}selected{% endif %}>
-                                {{ label }}
-                            </option>
-                        {% endfor %}
-                        {% if reading_shelf %}
-                            <option value="remove">-- Remove from Shelf --</option>
-                        {% endif %}
-                    </select>
-                    <button type="submit" style="background: #809671; color: #fff; border: none; padding: 9px 16px; border-radius: 8px; cursor: pointer; font-weight: bold;">
-                        Save
-                    </button>
-                </form>
+<!-- Main Book Showcase Card -->
+<div class="card" style="border-top: 4px solid var(--copper-gold);">
+    <div style="display: flex; gap: 28px; flex-wrap: wrap; align-items: flex-start;">
+        <!-- Cover / Classic Hardcover -->
+        {% if book.cover_image %}
+            <img src="{{ book.cover_image.url }}" alt="{{ book.title }}" style="width: 210px; height: 300px; object-fit: cover; border-radius: 10px; border: 2px solid var(--copper-gold); box-shadow: 0 8px 20px rgba(36, 28, 24, 0.18);">
+        {% else %}
+            <div style="width: 210px; height: 300px; background: linear-gradient(145deg, var(--espresso-dark) 0%, var(--leather-brown) 100%); border: 2px solid var(--copper-gold); border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; color: #F5E6D3; box-shadow: inset 8px 0 14px rgba(0, 0, 0, 0.35), 0 8px 20px rgba(36, 28, 24, 0.18); flex-shrink: 0;">
+                <span style="font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--copper-gold); margin-bottom: 12px;">BookCircle Archive</span>
+                <div class="serif" style="font-size: 18px; font-weight: 700; line-height: 1.4; border-top: 1px solid rgba(176, 125, 79, 0.6); border-bottom: 1px solid rgba(176, 125, 79, 0.6); padding: 14px 6px; width: 100%;">
+                    {{ book.title }}
+                </div>
+                {% if book.publication_year %}
+                    <span style="font-size: 12px; color: #D8C8B6; margin-top: 12px;">Published {{ book.publication_year }}</span>
+                {% endif %}
             </div>
         {% endif %}
+
+        <!-- Book Metadata & Shelf Controls -->
+        <div style="flex: 1; min-width: 260px;">
+            <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px;">
+                {% for genre in book.genres.all %}
+                    <span class="badge">{{ genre.name }}</span>
+                {% empty %}
+                    <span class="badge">Literary Collection</span>
+                {% endfor %}
+            </div>
+
+            <h1 style="margin: 0 0 8px; font-size: 28px; color: var(--espresso-dark);">{{ book.title }}</h1>
+
+            <p style="font-size: 16px; color: var(--leather-brown); margin: 0 0 16px;">
+                Written by
+                <strong>
+                    {% for author in book.authors.all %}
+                        {{ author.first_name }} {{ author.last_name }}{% if not forloop.last %}, {% endif %}
+                    {% empty %}
+                        Unknown Author
+                    {% endfor %}
+                </strong>
+            </p>
+
+            <div style="display: flex; gap: 20px; flex-wrap: wrap; font-size: 13.5px; color: var(--text-muted); margin-bottom: 20px; padding: 10px 14px; background: var(--bg-paper-light); border-radius: 8px; border: 1px solid var(--border-parchment);">
+                <span><strong>Publication Year:</strong> {{ book.publication_year|default:"—" }}</span>
+                <span><strong>ISBN:</strong> {{ book.isbn|default:"—" }}</span>
+                <span><strong>Community Notes:</strong> {{ book_posts.count }}</span>
+            </div>
+
+            <!-- Reading Shelf Widget -->
+            {% if user.is_authenticated %}
+                <div class="card-espresso" style="margin-bottom: 0; padding: 18px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <span class="serif" style="font-size: 15px; font-weight: 700; color: #F5E6D3;">🔖 Personal Reading Shelf</span>
+                        {% if reading_shelf %}
+                            <span class="badge badge-copper">{{ reading_shelf.get_status_display }}</span>
+                        {% else %}
+                            <span style="font-size: 12px; color: #CBBBA8;">Not on your shelf yet</span>
+                        {% endif %}
+                    </div>
+
+                    <form method="POST" action="{% url 'books:update_reading_shelf' book.pk %}" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                        {% csrf_token %}
+                        <select name="status" class="form-input" style="flex: 1; min-width: 180px;">
+                            {% for value, label in status_choices %}
+                                <option value="{{ value }}" {% if reading_shelf and reading_shelf.status == value %}selected{% endif %}>
+                                    {{ label }}
+                                </option>
+                            {% endfor %}
+                            {% if reading_shelf %}
+                                <option value="remove">✕ Remove from My Shelf</option>
+                            {% endif %}
+                        </select>
+                        <button type="submit" class="btn" style="padding: 10px 20px;">
+                            Update Shelf
+                        </button>
+                    </form>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Synopsis / Summary -->
+    <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border-parchment);">
+        <h3 style="margin-top: 0; margin-bottom: 10px; color: var(--espresso-dark); font-size: 18px;">📜 Synopsis & Overview</h3>
+        <p style="line-height: 1.75; margin: 0; color: var(--text-ink); font-size: 15px;">
+            {{ book.summary|default:"No synopsis has been recorded for this edition yet." }}
+        </p>
     </div>
 </div>
 
-<div style="background: #fff; border: 1px solid #d5cfc5; border-radius: 10px; padding: 18px; margin-bottom: 24px;">
-    <h3 style="margin-top: 0; color: #3d4a35;">Summary</h3>
-    <p style="line-height: 1.6; margin-bottom: 0;">{{ book.summary|default:"No summary available." }}</p>
+<!-- Reader Reviews & Quotes for this Book -->
+<div style="display: flex; justify-content: space-between; align-items: center; margin: 28px 0 16px;">
+    <h3 style="margin: 0; color: var(--espresso-dark); font-size: 20px;">✒️ Reader Reviews & Quotes ({{ book_posts.count }})</h3>
+    <a href="{% url 'posts:feed' %}" class="btn btn-espresso" style="font-size: 13px;">Write a Review +</a>
 </div>
 
-<h3 style="color: #3d4a35;">Reader Posts & Reviews ({{ book_posts.count }})</h3>
 {% for post in book_posts %}
-    <div style="background: #fff; border: 1px solid #d5cfc5; border-radius: 10px; padding: 16px; margin-bottom: 12px;">
-        <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
-            <a href="{% url 'interactions:user_profile' post.user.username %}" style="font-weight: bold; color: #3d4a35; text-decoration: none;">@{{ post.user.username }}</a>
-            <small style="color: #777;">{{ post.get_post_type_display }} • {{ post.created_at|date:"M d, Y" }}</small>
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div class="avatar-circle" style="width: 36px; height: 36px; font-size: 14px;">{{ post.user.username|slice:":1"|upper }}</div>
+                <div>
+                    <a href="{% url 'interactions:user_profile' post.user.username %}" style="font-weight: 700; color: var(--espresso-dark); text-decoration: none;">
+                        @{{ post.user.username }}
+                    </a>
+                    <div style="font-size: 12px; color: var(--text-muted);">{{ post.created_at|date:"M d, Y" }}</div>
+                </div>
+            </div>
+            <div style="display: flex; gap: 6px;">
+                <span class="badge">{{ post.get_post_type_display }}</span>
+                {% if post.rating %}
+                    <span class="badge badge-copper">★ {{ post.rating }}/5</span>
+                {% endif %}
+            </div>
         </div>
-        <p style="margin: 0; white-space: pre-line;">{{ post.content }}</p>
+        <p style="margin: 0; white-space: pre-line; font-size: 14.5px;">{{ post.content }}</p>
     </div>
 {% empty %}
-    <p style="color: #777;">No posts for this book yet. <a href="{% url 'posts:feed' %}" style="color: #637756;">Be the first to share one!</a></p>
+    <div class="card" style="text-align: center; padding: 32px;">
+        <p style="color: var(--text-muted); margin: 0 0 12px;">No reviews or quotes have been shared for this book yet.</p>
+        <a href="{% url 'posts:feed' %}" class="btn">Be the First to Share</a>
+    </div>
 {% endfor %}
 {% endblock %}

@@ -1,65 +1,151 @@
 {% extends 'base.html' %}
 
-{% block title %}Books Catalog - BookCircle{% endblock %}
+{% block title %}Library Catalog — BookCircle{% endblock %}
 
 {% block content %}
-<h2 style="color: #3d4a35; margin-bottom: 20px;">Books Catalog</h2>
+<style>
+    .catalog-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(235px, 1fr));
+        gap: 22px;
+    }
+    .book-item {
+        background: var(--card-cream);
+        border: 1px solid var(--border-parchment);
+        border-radius: var(--radius-lg);
+        padding: 18px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        box-shadow: var(--shadow-book);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .book-item:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 26px rgba(44, 34, 30, 0.14);
+    }
+    .hardcover-placeholder {
+        width: 100%;
+        height: 230px;
+        background: linear-gradient(145deg, var(--espresso-dark) 0%, var(--leather-brown) 100%);
+        border: 2px solid var(--copper-gold);
+        border-radius: 8px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 18px;
+        text-align: center;
+        color: #F5E6D3;
+        box-shadow: inset 6px 0 12px rgba(0, 0, 0, 0.35);
+        margin-bottom: 14px;
+        text-decoration: none;
+    }
+    .hardcover-placeholder .cover-title {
+        font-family: 'Merriweather', Georgia, serif;
+        font-size: 16px;
+        font-weight: 700;
+        line-height: 1.4;
+        color: #FFF6EB;
+        border-top: 1px solid rgba(176, 125, 79, 0.6);
+        border-bottom: 1px solid rgba(176, 125, 79, 0.6);
+        padding: 10px 6px;
+        width: 100%;
+    }
+</style>
 
-<form method="GET" style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 24px; background: #fff; padding: 15px; border-radius: 10px; border: 1px solid #d5cfc5;">
-    <input
-        type="text"
-        name="search"
-        class="form-input"
-        style="flex: 2; min-width: 200px;"
-        placeholder="Search by title or author..."
-        value="{{ search_query }}"
-    >
-    <select name="genre" class="form-input" style="flex: 1; min-width: 150px;">
-        <option value="">All Genres</option>
-        {% for genre in genres %}
-            <option value="{{ genre.id }}" {% if selected_genre == genre.id|stringformat:"s" %}selected{% endif %}>
-                {{ genre.name }}
-            </option>
-        {% endfor %}
-    </select>
-    <button type="submit" style="background: #809671; color: #fff; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: bold;">
-        Search
-    </button>
-    <a href="{% url 'books:book_catalog' %}" style="padding: 10px 14px; color: #637756; text-decoration: none; font-weight: 600;">Clear</a>
-</form>
+<!-- Header -->
+<div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 22px; padding-bottom: 14px; border-bottom: 1px solid var(--border-parchment);">
+    <div>
+        <h1 style="margin: 0; font-size: 26px; color: var(--espresso-dark);">🏛️ Library Catalog</h1>
+        <p style="margin: 4px 0 0; font-size: 14px; color: var(--text-muted);">Explore classic and contemporary editions in our collection</p>
+    </div>
+    <span class="badge" style="font-size: 13px; padding: 6px 12px;">{{ books.count }} Volumes Available</span>
+</div>
 
-<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 18px;">
+<!-- Search & Genre Filter Bar -->
+<div class="card" style="border-top: 3px solid var(--copper-gold); padding: 18px;">
+    <form method="GET" style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
+        <input
+            type="text"
+            name="search"
+            class="form-input"
+            style="flex: 2; min-width: 220px;"
+            placeholder="Search by book title or author name..."
+            value="{{ search_query }}"
+        >
+        <select name="genre" class="form-input" style="flex: 1; min-width: 170px;">
+            <option value="">All Literary Genres</option>
+            {% for genre in genres %}
+                <option value="{{ genre.id }}" {% if selected_genre == genre.id|stringformat:"s" %}selected{% endif %}>
+                    {{ genre.name }}
+                </option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="btn" style="padding: 10px 22px;">
+            🔍 Search
+        </button>
+        {% if search_query or selected_genre %}
+            <a href="{% url 'books:book_catalog' %}" class="btn btn-soft" style="padding: 10px 16px;">Reset</a>
+        {% endif %}
+    </form>
+</div>
+
+<!-- Books Grid -->
+<div class="catalog-grid">
     {% for book in books %}
-        <div style="background: #fff; border: 1px solid #d5cfc5; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between;">
+        <div class="book-item">
             <div>
                 {% if book.cover_image %}
-                    <a href="{% url 'books:book_detail' book.pk %}">
-                        <img src="{{ book.cover_image.url }}" alt="{{ book.title }}" style="width: 100%; height: 210px; object-fit: cover; border-radius: 8px; margin-bottom: 10px;">
+                    <a href="{% url 'books:book_detail' book.pk %}" style="display: block; margin-bottom: 14px;">
+                        <img src="{{ book.cover_image.url }}" alt="{{ book.title }}" style="width: 100%; height: 230px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border-parchment);">
+                    </a>
+                {% else %}
+                    <a href="{% url 'books:book_detail' book.pk %}" class="hardcover-placeholder">
+                        <span style="font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--copper-gold); margin-bottom: 8px;">BookCircle Edition</span>
+                        <div class="cover-title">{{ book.title }}</div>
+                        {% if book.publication_year %}
+                            <span style="font-size: 11px; color: #D8C8B6; margin-top: 8px;">Est. {{ book.publication_year }}</span>
+                        {% endif %}
                     </a>
                 {% endif %}
-                <h3 style="margin: 6px 0;">
-                    <a href="{% url 'books:book_detail' book.pk %}" style="color: #3d4a35; text-decoration: none;">{{ book.title }}</a>
+
+                <h3 style="margin: 0 0 6px; font-size: 17px; line-height: 1.35;">
+                    <a href="{% url 'books:book_detail' book.pk %}" style="color: var(--espresso-dark); text-decoration: none;">
+                        {{ book.title }}
+                    </a>
                 </h3>
-                <p style="font-size: 0.9em; color: #555; margin: 4px 0;">
-                    <strong>Author:</strong>
-                    {% for author in book.authors.all %}
-                        {{ author.first_name }} {{ author.last_name }}{% if not forloop.last %}, {% endif %}
-                    {% empty %}
-                        Unknown
-                    {% endfor %}
+
+                <p style="font-size: 13.5px; color: var(--text-muted); margin: 0 0 10px;">
+                    by
+                    <strong style="color: var(--leather-brown);">
+                        {% for author in book.authors.all %}
+                            {{ author.first_name }} {{ author.last_name }}{% if not forloop.last %}, {% endif %}
+                        {% empty %}
+                            Unknown Author
+                        {% endfor %}
+                    </strong>
                 </p>
-                <p style="font-size: 0.85em; color: #637756; margin: 4px 0;">
+
+                <div style="display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 14px;">
                     {% for genre in book.genres.all %}
-                        <span style="background: #E5E0D8; padding: 2px 8px; border-radius: 6px;">{{ genre.name }}</span>
+                        <span class="badge">{{ genre.name }}</span>
+                    {% empty %}
+                        <span class="badge">General</span>
                     {% endfor %}
-                </p>
+                </div>
             </div>
-            <a href="{% url 'books:book_detail' book.pk %}" style="margin-top: 12px; display: block; text-align: center; background: #809671; color: #fff; padding: 8px; border-radius: 8px; text-decoration: none; font-size: 0.9em; font-weight: bold;">
-                View Book & Shelf
+
+            <a href="{% url 'books:book_detail' book.pk %}" class="btn btn-espresso" style="width: 100%; font-size: 13.5px;">
+                📖 Open Volume & Shelf
             </a>
         </div>
     {% empty %}
-        <p style="text-align: center; color: #777; grid-column: 1 / -1;">No books found in catalog.</p>
+        <div class="card" style="grid-column: 1 / -1; text-align: center; padding: 48px 20px;">
+            <h3 style="color: var(--espresso-dark); margin-bottom: 8px;">No Volumes Matched Your Search</h3>
+            <p style="color: var(--text-muted); margin-bottom: 16px;">Try clearing the filters or add new editions via the Library Admin.</p>
+            <a href="{% url 'books:book_catalog' %}" class="btn">Show All Books</a>
+        </div>
     {% endfor %}
 </div>
 {% endblock %}

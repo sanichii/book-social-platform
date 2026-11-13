@@ -1,25 +1,67 @@
 {% extends 'base.html' %}
 
+{% block title %}Library Members — BookCircle{% endblock %}
+
 {% block content %}
-<div style="max-width: 780px; margin: 20px auto; padding: 0 15px;">
-    <h2 style="color: #3d4a35;">Discover Readers</h2>
+<div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 24px; padding-bottom: 14px; border-bottom: 1px solid var(--border-parchment);">
+    <div>
+        <h1 style="margin: 0; font-size: 26px; color: var(--espresso-dark);">👥 Library Members & Readers</h1>
+        <p style="margin: 4px 0 0; font-size: 14px; color: var(--text-muted);">Connect with fellow readers, discover their shelves, and follow their reviews</p>
+    </div>
+    <span class="badge" style="font-size: 13px; padding: 6px 12px;">{{ readers.count }} Active Readers</span>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 20px;">
     {% for reader in readers %}
-        <div style="background: #fff; border: 1px solid #d5cfc5; border-radius: 12px; padding: 16px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+        <div class="card" style="margin-bottom: 0; display: flex; flex-direction: column; justify-content: space-between; border-top: 3px solid var(--copper-gold);">
             <div>
-                <a href="{% url 'interactions:user_profile' reader.username %}" style="font-size: 1.1em; font-weight: bold; color: #3d4a35; text-decoration: none;">
-                    @{{ reader.username }}
-                </a>
-                <p style="margin: 4px 0 0; color: #666; font-size: 0.9em;">{{ reader.profile.bio|truncatewords:15|default:"BookCircle Reader" }}</p>
+                <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 14px;">
+                    {% if reader.profile.avatar %}
+                        <img src="{{ reader.profile.avatar.url }}" alt="{{ reader.username }}" class="avatar-circle" style="width: 54px; height: 54px; font-size: 20px;">
+                    {% else %}
+                        <div class="avatar-circle" style="width: 54px; height: 54px; font-size: 20px;">{{ reader.username|slice:":1"|upper }}</div>
+                    {% endif %}
+                    <div>
+                        <a href="{% url 'interactions:user_profile' reader.username %}" class="serif" style="font-weight: 700; font-size: 17px; color: var(--espresso-dark); text-decoration: none; display: block;">
+                            @{{ reader.username }}
+                        </a>
+                        {% if reader.is_verified_author %}
+                            <span class="badge badge-copper" style="margin-top: 4px;">✒️ Verified Author</span>
+                        {% else %}
+                            <span style="font-size: 12.5px; color: var(--text-muted);">Member since {{ reader.date_joined|date:"M Y" }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if reader.profile.favorite_genre %}
+                    <div style="margin-bottom: 10px;">
+                        <span class="badge">📚 Favorite: {{ reader.profile.favorite_genre }}</span>
+                    </div>
+                {% endif %}
+
+                <p style="font-size: 13.5px; color: var(--text-muted); margin: 0 0 16px; min-height: 40px;">
+                    {{ reader.profile.bio|default:"Exploring timeless stories and sharing reading notes in the library."|truncatewords:18 }}
+                </p>
             </div>
-            <form method="POST" action="{% url 'interactions:toggle_follow' reader.username %}">
-                {% csrf_token %}
-                <button type="submit" style="background: {% if reader.id in following_ids %}#E5E0D8; color: #333{% else %}#809671; color: #fff{% endif %}; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer;">
-                    {% if reader.id in following_ids %}Following{% else %}Follow{% endif %}
-                </button>
-            </form>
+
+            <div style="display: flex; gap: 8px; padding-top: 12px; border-top: 1px solid var(--border-parchment);">
+                <a href="{% url 'interactions:user_profile' reader.username %}" class="btn btn-soft" style="flex: 1; font-size: 13px;">
+                    View Profile
+                </a>
+                {% if user.is_authenticated and reader != user %}
+                    <form method="POST" action="{% url 'interactions:toggle_follow' reader.username %}" style="margin: 0;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn {% if reader.id in following_ids %}btn-espresso{% endif %}" style="font-size: 13px; padding: 10px 14px;">
+                            {% if reader.id in following_ids %}✓ Following{% else %}+ Follow{% endif %}
+                        </button>
+                    </form>
+                {% endif %}
+            </div>
         </div>
     {% empty %}
-        <p style="color: #777;">No other readers registered yet.</p>
+        <div class="card" style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+            <p style="color: var(--text-muted); margin: 0;">No other readers have joined the library yet.</p>
+        </div>
     {% endfor %}
 </div>
 {% endblock %}

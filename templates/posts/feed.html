@@ -1,121 +1,293 @@
 {% extends 'base.html' %}
 
+{% block title %}Community Feed — BookCircle Library{% endblock %}
+
 {% block content %}
-<div style="max-width: 780px; margin: 20px auto; padding: 0 15px;">
+<style>
+    .library-grid {
+        display: grid;
+        grid-template-columns: 1fr 290px;
+        gap: 26px;
+        align-items: start;
+    }
+    .parchment-quote {
+        margin: 16px 0;
+        padding: 20px 24px;
+        background: linear-gradient(135deg, #FBF6EC 0%, #F2E7D5 100%);
+        border: 1px solid #D9C3A3;
+        border-left: 5px solid var(--copper-gold);
+        border-radius: 4px 12px 12px 4px;
+        font-family: 'Merriweather', Georgia, serif;
+        font-style: italic;
+        font-size: 16px;
+        color: #2B211B;
+        box-shadow: inset 0 0 18px rgba(176, 125, 79, 0.08);
+    }
+    .sidebar-box {
+        background: var(--card-cream);
+        border: 1px solid var(--border-parchment);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        box-shadow: var(--shadow-book);
+        margin-bottom: 20px;
+    }
+    .sidebar-header {
+        background: var(--espresso-dark);
+        color: #F5E6D3;
+        padding: 12px 18px;
+        font-family: 'Merriweather', serif;
+        font-size: 15px;
+        font-weight: 700;
+        border-bottom: 2px solid var(--copper-gold);
+    }
+    .sidebar-body {
+        padding: 16px 18px;
+    }
+    .filter-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 12px;
+        border-radius: 8px;
+        text-decoration: none;
+        color: var(--text-ink);
+        font-size: 14px;
+        font-weight: 500;
+        margin-bottom: 4px;
+        transition: background 0.15s;
+    }
+    .filter-item:hover {
+        background: var(--gold-soft);
+    }
+    .filter-item.active {
+        background: var(--espresso-dark);
+        color: #F5E6D3;
+        font-weight: 600;
+    }
+    @media (max-width: 860px) {
+        .library-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
 
-    <!-- Create Post Card -->
-    <div style="background: #fff; border: 1px solid #d5cfc5; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
-        <h2 style="margin-top: 0; color: #3d4a35;">Share a Book Thought or Quote</h2>
-        <form method="POST" enctype="multipart/form-data">
-            {% csrf_token %}
-            <div style="margin-bottom: 12px;">
-                <label><strong>Book:</strong></label>
-                {{ form.book }}
-            </div>
-            <div style="display: flex; gap: 12px; margin-bottom: 12px;">
-                <div style="flex: 1;">
-                    <label><strong>Post Type:</strong></label>
-                    {{ form.post_type }}
-                </div>
-                <div style="flex: 1;">
-                    <label><strong>Rating (1-5):</strong></label>
-                    {{ form.rating }}
-                </div>
-            </div>
-            <div style="margin-bottom: 12px;">
-                <label><strong>Content:</strong></label>
-                {{ form.content }}
-            </div>
-            <div style="margin-bottom: 14px;">
-                <label><strong>Photo (optional):</strong></label>
-                {{ form.image }}
-            </div>
-            <button type="submit" style="background: #809671; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold;">
-                Publish Post
-            </button>
-        </form>
+<!-- Top Header Bar -->
+<div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; margin-bottom: 22px; padding-bottom: 14px; border-bottom: 1px solid var(--border-parchment);">
+    <div>
+        <h1 style="margin: 0; font-size: 26px; color: var(--espresso-dark);">Community Feed</h1>
+        <p style="margin: 4px 0 0; font-size: 14px; color: var(--text-muted);">Literary reviews, timeless quotes, and discussions from fellow readers</p>
     </div>
+    <button type="button" class="btn" onclick="document.getElementById('composer-card').style.display = document.getElementById('composer-card').style.display === 'none' ? 'block' : 'none';">
+        ✍️ Add Post +
+    </button>
+</div>
 
-    <!-- Filter Bar -->
-    <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
-        <a href="{% url 'posts:feed' %}" style="padding: 6px 14px; border-radius: 20px; text-decoration: none; background: {% if not selected_type %}#809671; color: #fff{% else %}#fff; color: #333; border: 1px solid #ccc{% endif %};">All</a>
-        <a href="?type=review" style="padding: 6px 14px; border-radius: 20px; text-decoration: none; background: {% if selected_type == 'review' %}#809671; color: #fff{% else %}#fff; color: #333; border: 1px solid #ccc{% endif %};">Reviews</a>
-        <a href="?type=quote" style="padding: 6px 14px; border-radius: 20px; text-decoration: none; background: {% if selected_type == 'quote' %}#809671; color: #fff{% else %}#fff; color: #333; border: 1px solid #ccc{% endif %};">Quotes</a>
-        <a href="?type=thought" style="padding: 6px 14px; border-radius: 20px; text-decoration: none; background: {% if selected_type == 'thought' %}#809671; color: #fff{% else %}#fff; color: #333; border: 1px solid #ccc{% endif %};">Thoughts</a>
-    </div>
-
-    <!-- Posts Feed -->
-    {% for post in posts %}
-        <div style="background: #fff; border: 1px solid #d5cfc5; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                <div>
-                    <a href="{% url 'interactions:user_profile' post.user.username %}" style="color: #3d4a35; text-decoration: none; font-weight: bold;">@{{ post.user.username }}</a>
-                    <span style="background: #E5E0D8; color: #3d4a35; padding: 2px 8px; border-radius: 6px; font-size: 0.85em; margin-left: 6px;">
-                        {{ post.get_post_type_display }}
-                    </span>
-                    {% if post.rating %}
-                        <span style="color: #b58900; font-weight: bold; margin-left: 6px;">★ {{ post.rating }}/5</span>
-                    {% endif %}
+<div class="library-grid">
+    <!-- Left Column: Main Feed -->
+    <div>
+        <!-- Collapsible Create Post Card -->
+        <div id="composer-card" class="card" style="border-top: 4px solid var(--copper-gold);">
+            <h3 style="margin-top: 0; margin-bottom: 14px; color: var(--espresso-dark); font-size: 17px;">
+                ✒️ Write in the Library Ledger
+            </h3>
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+                    <div>
+                        <label>Select Book</label>
+                        {{ form.book }}
+                    </div>
+                    <div>
+                        <label>Entry Type</label>
+                        {{ form.post_type }}
+                    </div>
+                    <div>
+                        <label>Rating (1–5)</label>
+                        {{ form.rating }}
+                    </div>
                 </div>
-                <small style="color: #777;">{{ post.created_at|date:"M d, Y H:i" }}</small>
-            </div>
 
-            <p style="margin: 6px 0 12px; color: #556b46;">
-                Book: <a href="{% url 'books:book_detail' post.book.pk %}" style="color: #3d4a35; font-weight: bold;">{{ post.book.title }}</a>
-            </p>
+                <div class="form-group">
+                    {{ form.content }}
+                </div>
 
-            <p style="line-height: 1.6; white-space: pre-line; {% if post.post_type == 'quote' %}font-style: italic; border-left: 4px solid #809671; padding-left: 12px;{% endif %}">
-                {{ post.content }}
-            </p>
-
-            {% if post.image %}
-                <img src="{{ post.image.url }}" alt="Post image" style="max-width: 100%; border-radius: 8px; margin: 10px 0;">
-            {% endif %}
-
-            <!-- Like & Delete Actions -->
-            <div style="display: flex; align-items: center; gap: 15px; border-top: 1px solid #eee; padding-top: 12px; margin-top: 12px;">
-                <form method="POST" action="{% url 'posts:toggle_like' post.pk %}" style="margin: 0;">
-                    {% csrf_token %}
-                    <button type="submit" style="background: {% if post.id in liked_post_ids %}#809671; color: #fff{% else %}#E5E0D8; color: #333{% endif %}; border: none; padding: 6px 14px; border-radius: 6px; cursor: pointer;">
-                        ♥ {% if post.id in liked_post_ids %}Liked{% else %}Like{% endif %} ({{ post.likes.count }})
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                    <div style="flex: 1; min-width: 200px;">
+                        <label style="font-size: 12.5px; color: var(--text-muted);">Attach book photo or page snapshot (optional)</label>
+                        {{ form.image }}
+                    </div>
+                    <button type="submit" class="btn" style="padding: 11px 26px;">
+                        Publish Entry
                     </button>
-                </form>
+                </div>
+            </form>
+        </div>
 
-                <span style="color: #666;">💬 {{ post.comments.count }} Comments</span>
+        <!-- Posts Stream -->
+        {% for post in posts %}
+            <article class="card">
+                <!-- Author Header -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        {% if post.user.profile.avatar %}
+                            <img src="{{ post.user.profile.avatar.url }}" alt="{{ post.user.username }}" class="avatar-circle">
+                        {% else %}
+                            <div class="avatar-circle">{{ post.user.username|slice:":1"|upper }}</div>
+                        {% endif %}
+                        <div>
+                            <a href="{% url 'interactions:user_profile' post.user.username %}" style="font-weight: 700; color: var(--espresso-dark); text-decoration: none; font-size: 15px;">
+                                @{{ post.user.username }}
+                            </a>
+                            <div style="font-size: 12px; color: var(--text-muted);">
+                                {{ post.created_at|date:"M d, Y • H:i" }}
+                            </div>
+                        </div>
+                    </div>
 
-                {% if post.user == request.user %}
-                    <form method="POST" action="{% url 'posts:delete_post' post.pk %}" style="margin-left: auto;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span class="badge">{{ post.get_post_type_display }}</span>
+                        {% if post.rating %}
+                            <span class="badge badge-copper">★ {{ post.rating }}/5</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Connected Book Banner (Espresso Hardcover Style) -->
+                <div style="background: var(--espresso-dark); color: #F5E6D3; padding: 12px 16px; border-radius: 10px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border-left: 4px solid var(--copper-gold);">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        {% if post.book.cover_image %}
+                            <img src="{{ post.book.cover_image.url }}" alt="{{ post.book.title }}" style="width: 38px; height: 54px; object-fit: cover; border-radius: 4px; border: 1px solid var(--copper-gold);">
+                        {% else %}
+                            <div style="width: 38px; height: 54px; background: var(--leather-brown); border: 1px solid var(--copper-gold); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 16px;">📕</div>
+                        {% endif %}
+                        <div>
+                            <a href="{% url 'books:book_detail' post.book.pk %}" class="serif" style="color: #FFF6EB; font-weight: 700; text-decoration: none; font-size: 15px;">
+                                {{ post.book.title }}
+                            </a>
+                            <div style="font-size: 12px; color: #CBBBA8;">
+                                {% for author in post.book.authors.all %}
+                                    {{ author.first_name }} {{ author.last_name }}{% if not forloop.last %}, {% endif %}
+                                {% empty %}
+                                    Library Edition
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    <a href="{% url 'books:book_detail' post.book.pk %}" class="btn" style="padding: 6px 12px; font-size: 12px;">
+                        Open Book
+                    </a>
+                </div>
+
+                <!-- Post Text / Quote -->
+                {% if post.post_type == 'quote' %}
+                    <blockquote class="parchment-quote">
+                        “{{ post.content }}”
+                        <footer style="margin-top: 8px; font-style: normal; font-size: 12.5px; color: var(--leather-brown); font-family: 'Inter', sans-serif;">
+                            — Excerpt from <strong>{{ post.book.title }}</strong>
+                        </footer>
+                    </blockquote>
+                {% else %}
+                    <p style="margin: 12px 0; font-size: 15px; white-space: pre-line; color: var(--text-ink);">{{ post.content }}</p>
+                {% endif %}
+
+                {% if post.image %}
+                    <img src="{{ post.image.url }}" alt="Post image" style="width: 100%; max-height: 440px; object-fit: cover; border-radius: 10px; margin-top: 10px; border: 1px solid var(--border-parchment);">
+                {% endif %}
+
+                <!-- Interactions Bar -->
+                <div style="display: flex; align-items: center; gap: 12px; border-top: 1px solid var(--border-parchment); padding-top: 14px; margin-top: 16px;">
+                    <form method="POST" action="{% url 'posts:toggle_like' post.pk %}" style="margin: 0;">
                         {% csrf_token %}
-                        <button type="submit" style="background: transparent; color: #c0392b; border: 1px solid #c0392b; padding: 4px 10px; border-radius: 6px; cursor: pointer;">
-                            Delete
+                        <button type="submit" class="btn {% if post.id in liked_post_ids %}{% else %}btn-soft{% endif %}" style="padding: 6px 14px; font-size: 13px;">
+                            ♥ {% if post.id in liked_post_ids %}Liked{% else %}Like{% endif %} ({{ post.likes.count }})
                         </button>
                     </form>
-                {% endif %}
+
+                    <span style="font-size: 13.5px; color: var(--text-muted); font-weight: 500;">
+                        💬 {{ post.comments.count }} Comments
+                    </span>
+
+                    {% if post.user == request.user %}
+                        <form method="POST" action="{% url 'posts:delete_post' post.pk %}" style="margin-left: auto;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger-outline">
+                                Delete
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
+
+                <!-- Comments Section -->
+                <div style="margin-top: 14px; background: var(--bg-paper-light); padding: 14px; border-radius: 10px; border: 1px solid #E5DAC8;">
+                    {% for comment in post.comments.all %}
+                        <div style="padding: 7px 0; border-bottom: 1px solid #E6DCCB; font-size: 13.5px; display: flex; justify-content: space-between; gap: 10px;">
+                            <div>
+                                <a href="{% url 'interactions:user_profile' comment.user.username %}" style="font-weight: 700; color: var(--espresso-dark); text-decoration: none;">@{{ comment.user.username }}</a>:
+                                <span>{{ comment.content }}</span>
+                            </div>
+                            <small style="color: var(--text-muted); white-space: nowrap;">{{ comment.created_at|timesince }} ago</small>
+                        </div>
+                    {% empty %}
+                        <p style="color: var(--text-muted); font-size: 13px; margin: 0 0 10px;">No notes in the margin yet. Add your comment below.</p>
+                    {% endfor %}
+
+                    <form method="POST" action="{% url 'posts:add_comment' post.pk %}" style="display: flex; gap: 8px; margin-top: 10px;">
+                        {% csrf_token %}
+                        {{ comment_form.content }}
+                        <button type="submit" class="btn btn-espresso" style="padding: 8px 18px; white-space: nowrap;">
+                            Comment
+                        </button>
+                    </form>
+                </div>
+            </article>
+        {% empty %}
+            <div class="card" style="text-align: center; padding: 48px 24px;">
+                <h3 style="color: var(--espresso-dark); margin-bottom: 8px;">The Reading Room is Quiet</h3>
+                <p style="color: var(--text-muted); margin-bottom: 18px;">Be the first member to share a book review, quote, or reading note.</p>
+                <a href="{% url 'books:book_catalog' %}" class="btn">Browse Library Catalog</a>
             </div>
+        {% endfor %}
+    </div>
 
-            <!-- Comments Section -->
-            <div style="margin-top: 15px; background: #faf8f5; padding: 12px; border-radius: 8px;">
-                {% for comment in post.comments.all %}
-                    <div style="margin-bottom: 8px; font-size: 0.92em;">
-                        <strong>@{{ comment.user.username }}:</strong> {{ comment.content }}
-                        <small style="color: #999; margin-left: 6px;">{{ comment.created_at|timesince }} ago</small>
-                    </div>
-                {% empty %}
-                    <p style="color: #888; font-size: 0.9em; margin: 0 0 8px;">No comments yet.</p>
-                {% endfor %}
-
-                <form method="POST" action="{% url 'posts:add_comment' post.pk %}" style="display: flex; gap: 8px; margin-top: 8px;">
-                    {% csrf_token %}
-                    {{ comment_form.content }}
-                    <button type="submit" style="background: #809671; color: #fff; border: none; padding: 6px 14px; border-radius: 6px; cursor: pointer;">
-                        Send
-                    </button>
-                </form>
+    <!-- Right Column: Classic Library Sidebar -->
+    <aside>
+        <!-- Quick Navigation Box -->
+        <div class="sidebar-box">
+            <div class="sidebar-header">📚 Library Wings</div>
+            <div class="sidebar-body">
+                <a href="{% url 'books:book_catalog' %}" class="filter-item">
+                    <span>📖 Book Catalog</span>
+                    <span>→</span>
+                </a>
+                <a href="{% url 'accounts:profile' %}" class="filter-item">
+                    <span>🔖 My Reading Shelves</span>
+                    <span>→</span>
+                </a>
+                <a href="{% url 'interactions:readers_list' %}" class="filter-item">
+                    <span>👥 Fellow Readers</span>
+                    <span>→</span>
+                </a>
             </div>
         </div>
-    {% empty %}
-        <p style="text-align: center; color: #777;">No posts yet. Add a book in Admin or Catalog and share your first post!</p>
-    {% endfor %}
 
+        <!-- Filter By Post Type Box -->
+        <div class="sidebar-box">
+            <div class="sidebar-header">🕯️ Filter By Entry Type</div>
+            <div class="sidebar-body">
+                <a href="{% url 'posts:feed' %}" class="filter-item {% if not selected_type %}active{% endif %}">
+                    <span>All Entries</span>
+                </a>
+                <a href="?type=review" class="filter-item {% if selected_type == 'review' %}active{% endif %}">
+                    <span>⭐ Book Reviews</span>
+                </a>
+                <a href="?type=quote" class="filter-item {% if selected_type == 'quote' %}active{% endif %}">
+                    <span>❝ Literary Quotes</span>
+                </a>
+                <a href="?type=thought" class="filter-item {% if selected_type == 'thought' %}active{% endif %}">
+                    <span>💭 Reading Thoughts</span>
+                </a>
+            </div>
+        </div>
+    </aside>
 </div>
 {% endblock %}
